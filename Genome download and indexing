@@ -1,0 +1,39 @@
+#!/bin/bash
+# RNA-seq alignment and counting pipeline
+
+# Unload system perl for compatibility with entrez-directmodule unload perl
+
+# Variables
+# had to manually download them and scp them to make them work and their names changed to assembly and annnotation
+#ASSEMBLY='https://downloads.wormbase.org/releases/WS275/species/c_elegans/PRJNA13758/c_elegans$
+#ANNOTATION='https://downloads.wormbase.org/releases/WS275/species/c_elegans/PRJNA13758/c_elega$
+
+# Make genome directory
+mkdir -p genomefiles
+
+# Download and unpack genome assembly
+#wget $ASSEMBLY
+gunzip -c genome/assembly.fa.gz > genomefiles/assembly.fasta
+
+# Download and unpack genome annotation
+wget $ANNOTATION
+gunzip -c genome/annotation.gtf.gz > genomefiles/annotation.gtf
+
+# Create STAR index directory
+mkdir -p genomefiles/index
+
+# Generate STAR genome index
+STAR \
+  --runThreadN 8 \
+  --runMode genomeGenerate \
+  --genomeDir genomefiles/index \
+  --genomeFastaFiles genomefiles/assembly.fasta \
+  --sjdbGTFfile genomefiles/annotation.gtf \
+  --genomeSAindexNbases 12
+
+# Make output directories
+mkdir -p results/aligned
+mkdir -p results/counts
+
+
+
