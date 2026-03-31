@@ -1,0 +1,228 @@
+(rnaseq) [duttasam@i67 alfa]$ nano WG.sh
+(rnaseq) [duttasam@i67 alfa]$ bash WG.sh
+wget: missing URL
+Usage: wget [OPTION]... [URL]...
+
+Try `wget --help' for more options.
+	/N/u/duttasam/Quartz/miniconda3/envs/rnaseq/bin/STAR-avx2 --runThreadN 8 --runMode genomeGenerate --genomeDir genomefiles/index --genomeFastaFiles genomefiles/assembly.fasta --sjdbGTFfile genomefiles/annotation.gtf --genomeSAindexNbases 12
+	STAR version: 2.7.11b   compiled: 2025-07-24T03:06:21+0000 :/opt/conda/conda-bld/star_1753326220084/work/source
+Mar 30 15:17:09 ..... started STAR run
+Mar 30 15:17:09 ... starting to generate Genome files
+Mar 30 15:17:11 ..... processing annotations GTF
+Mar 30 15:17:14 ... starting to sort Suffix Array. This may take a long time...
+Mar 30 15:17:15 ... sorting Suffix Array chunks and saving them to disk...
+Mar 30 15:17:33 ... loading chunks from disk, packing SA...
+Mar 30 15:17:37 ... finished generating suffix array
+Mar 30 15:17:37 ... generating Suffix Array index
+Mar 30 15:17:48 ... completed Suffix Array index
+Mar 30 15:17:48 ..... inserting junctions into the genome indices
+Mar 30 15:18:35 ... writing Genome to disk ...
+Mar 30 15:18:35 ... writing Suffix Array to disk ...
+Mar 30 15:18:36 ... writing SAindex to disk
+Mar 30 15:18:36 ..... finished successfully
+(rnaseq) [duttasam@i67 alfa]$ nano WG.sh
+(rnaseq) [duttasam@i67 alfa]$ nano AG.sh
+(rnaseq) [duttasam@i67 alfa]$ ls
+AG.sh					  FCfiles      results	SRR23261283  SRR23261288  WG.sh
+c_elegans.PRJNA13758.WS275.genomic.fa.gz  genome       sam1.sh	SRR23261284  SRR23261291
+FC					  genomefiles  sam2.sh	SRR23261287  SRR23261292
+(rnaseq) [duttasam@i67 alfa]$ cd FCfiles
+(rnaseq) [duttasam@i67 FCfiles]$ ls
+SRR23261283_pass.fastq	SRR23261287_pass.fastq	SRR23261291_pass.fastq
+SRR23261284_pass.fastq	SRR23261288_pass.fastq	SRR23261292_pass.fastq
+(rnaseq) [duttasam@i67 FCfiles]$ cd ..
+(rnaseq) [duttasam@i67 alfa]$ nano AG.sh
+(rnaseq) [duttasam@i67 alfa]$ cd genomefiles
+(rnaseq) [duttasam@i67 genomefiles]$ ls -thor
+total 312M
+-rw-rw-r-- 1 duttasam  98M Mar 30 15:17 assembly.fasta
+-rw-rw-r-- 1 duttasam 215M Mar 30 15:17 annotation.gtf
+drwxrwxr-x 2 duttasam 4.0K Mar 30 15:18 index
+(rnaseq) [duttasam@i67 genomefiles]$ cd ..
+(rnaseq) [duttasam@i67 alfa]$ nano AG.sh
+(rnaseq) [duttasam@i67 alfa]$ bash WG.sh
+
+wget: missing URL
+Usage: wget [OPTION]... [URL]...
+
+Try `wget --help' for more options.
+	/N/u/duttasam/Quartz/miniconda3/envs/rnaseq/bin/STAR-avx2 --runThreadN 8 --runMode genomeGenerate --genomeDir genomefiles/index --genomeFastaFiles genomefiles/assembly.fasta --sjdbGTFfile genomefiles/annotation.gtf --genomeSAindexNbases 12
+	STAR version: 2.7.11b   compiled: 2025-07-24T03:06:21+0000 :/opt/conda/conda-bld/star_1753326220084/work/source
+Mar 30 15:34:03 ..... started STAR run
+Mar 30 15:34:03 ... starting to generate Genome files
+Mar 30 15:34:05 ..... processing annotations GTF
+^C
+(rnaseq) [duttasam@i67 alfa]$ ^C
+(rnaseq) [duttasam@i67 alfa]$ bash AG.sh
+AG.sh: line 11: SRR23261283_pass.fastq: command not found
+AG.sh: line 12: SRR23261284_pass.fastq: command not found
+	/N/u/duttasam/Quartz/miniconda3/envs/rnaseq/bin/STAR-avx2 --runThreadN 8 --outFilterMultimapNmax 1 --outFilterScoreMinOverLread .66 --outFilterMismatchNmax 10 --outFilterMismatchNoverLmax .3 --runMode alignReads --genomeDir genomefiles/index --readFilesIn FCfiles/SRR23261283_pass.fastq --outFileNamePrefix results/aligned/SRR23261283_pass_ --outSAMattributes All --outSAMtype BAM SortedByCoordinate
+	STAR version: 2.7.11b   compiled: 2025-07-24T03:06:21+0000 :/opt/conda/conda-bld/star_1753326220084/work/source
+Mar 30 15:34:12 ..... started STAR run
+Mar 30 15:34:12 ..... loading genome
+Mar 30 15:34:13 ..... started mapping
+Mar 30 15:38:03 ..... finished mapping
+Mar 30 15:38:03 ..... started sorting BAM
+Mar 30 15:38:30 ..... finished successfully
+	/N/u/duttasam/Quartz/miniconda3/envs/rnaseq/bin/STAR-avx2 --runThreadN 8 --outFilterMultimapNmax 1 --outFilterScoreMinOverLread .66 --outFilterMismatchNmax 10 --outFilterMismatchNoverLmax .3 --runMode alignReads --genomeDir genomefiles/index --readFilesIn FCfiles/SRR23261284_pass.fastq --outFileNamePrefix results/aligned/SRR23261284_pass_ --outSAMattributes All --outSAMtype BAM SortedByCoordinate
+	STAR version: 2.7.11b   compiled: 2025-07-24T03:06:21+0000 :/opt/conda/conda-bld/star_1753326220084/work/source
+Mar 30 15:38:36 ..... started STAR run
+Mar 30 15:38:36 ..... loading genome
+Mar 30 15:38:37 ..... started mapping
+Mar 30 15:41:37 ..... finished mapping
+Mar 30 15:41:38 ..... started sorting BAM
+Mar 30 15:42:01 ..... finished successfully
+	/N/u/duttasam/Quartz/miniconda3/envs/rnaseq/bin/STAR-avx2 --runThreadN 8 --outFilterMultimapNmax 1 --outFilterScoreMinOverLread .66 --outFilterMismatchNmax 10 --outFilterMismatchNoverLmax .3 --runMode alignReads --genomeDir genomefiles/index --readFilesIn FCfiles/SRR23261287_pass.fastq --outFileNamePrefix results/aligned/SRR23261287_pass_ --outSAMattributes All --outSAMtype BAM SortedByCoordinate
+	STAR version: 2.7.11b   compiled: 2025-07-24T03:06:21+0000 :/opt/conda/conda-bld/star_1753326220084/work/source
+Mar 30 15:42:06 ..... started STAR run
+Mar 30 15:42:06 ..... loading genome
+Mar 30 15:42:07 ..... started mapping
+Mar 30 15:48:03 ..... finished mapping
+Mar 30 15:48:03 ..... started sorting BAM
+Mar 30 15:49:00 ..... finished successfully
+	/N/u/duttasam/Quartz/miniconda3/envs/rnaseq/bin/STAR-avx2 --runThreadN 8 --outFilterMultimapNmax 1 --outFilterScoreMinOverLread .66 --outFilterMismatchNmax 10 --outFilterMismatchNoverLmax .3 --runMode alignReads --genomeDir genomefiles/index --readFilesIn FCfiles/SRR23261288_pass.fastq --outFileNamePrefix results/aligned/SRR23261288_pass_ --outSAMattributes All --outSAMtype BAM SortedByCoordinate
+	STAR version: 2.7.11b   compiled: 2025-07-24T03:06:21+0000 :/opt/conda/conda-bld/star_1753326220084/work/source
+Mar 30 15:49:10 ..... started STAR run
+Mar 30 15:49:10 ..... loading genome
+Mar 30 15:49:11 ..... started mapping
+Mar 30 15:55:18 ..... finished mapping
+Mar 30 15:55:18 ..... started sorting BAM
+Mar 30 15:56:14 ..... finished successfully
+	/N/u/duttasam/Quartz/miniconda3/envs/rnaseq/bin/STAR-avx2 --runThreadN 8 --outFilterMultimapNmax 1 --outFilterScoreMinOverLread .66 --outFilterMismatchNmax 10 --outFilterMismatchNoverLmax .3 --runMode alignReads --genomeDir genomefiles/index --readFilesIn FCfiles/SRR23261291_pass.fastq --outFileNamePrefix results/aligned/SRR23261291_pass_ --outSAMattributes All --outSAMtype BAM SortedByCoordinate
+	STAR version: 2.7.11b   compiled: 2025-07-24T03:06:21+0000 :/opt/conda/conda-bld/star_1753326220084/work/source
+Mar 30 15:56:23 ..... started STAR run
+Mar 30 15:56:23 ..... loading genome
+Mar 30 15:56:24 ..... started mapping
+Mar 30 16:02:09 ..... finished mapping
+Mar 30 16:02:09 ..... started sorting BAM
+Mar 30 16:03:07 ..... finished successfully
+	/N/u/duttasam/Quartz/miniconda3/envs/rnaseq/bin/STAR-avx2 --runThreadN 8 --outFilterMultimapNmax 1 --outFilterScoreMinOverLread .66 --outFilterMismatchNmax 10 --outFilterMismatchNoverLmax .3 --runMode alignReads --genomeDir genomefiles/index --readFilesIn FCfiles/SRR23261292_pass.fastq --outFileNamePrefix results/aligned/SRR23261292_pass_ --outSAMattributes All --outSAMtype BAM SortedByCoordinate
+	STAR version: 2.7.11b   compiled: 2025-07-24T03:06:21+0000 :/opt/conda/conda-bld/star_1753326220084/work/source
+Mar 30 16:03:14 ..... started STAR run
+Mar 30 16:03:14 ..... loading genome
+Mar 30 16:03:15 ..... started mapping
+Mar 30 16:48:14 ..... finished mapping
+Mar 30 16:48:15 ..... started sorting BAM
+Mar 30 16:48:23 ..... finished successfully
+
+        ==========     _____ _    _ ____  _____  ______          _____  
+        =====         / ____| |  | |  _ \|  __ \|  ____|   /\   |  __ \ 
+          =====      | (___ | |  | | |_) | |__) | |__     /  \  | |  | |
+            ====      \___ \| |  | |  _ <|  _  /|  __|   / /\ \ | |  | |
+              ====    ____) | |__| | |_) | | \ \| |____ / ____ \| |__| |
+        ==========   |_____/ \____/|____/|_|  \_\______/_/    \_\_____/
+	  v2.1.1
+
+//========================== featureCounts setting ===========================\\
+||                                                                            ||
+||             Input files : 6 BAM files                                      ||
+||                                                                            ||
+||                           SRR23261287_pass_Aligned.sortedByCoord.out.bam   ||
+||                           SRR23261291_pass_Aligned.sortedByCoord.out.bam   ||
+||                           SRR23261288_pass_Aligned.sortedByCoord.out.bam   ||
+||                           SRR23261284_pass_Aligned.sortedByCoord.out.bam   ||
+||                           SRR23261292_pass_Aligned.sortedByCoord.out.bam   ||
+||                           SRR23261283_pass_Aligned.sortedByCoord.out.bam   ||
+||                                                                            ||
+||             Output file : counts.tsv                                       ||
+||                 Summary : counts.tsv.summary                               ||
+||              Paired-end : no                                               ||
+||        Count read pairs : no                                               ||
+||              Annotation : annotation.gtf (GTF)                             ||
+||      Dir for temp files : results/counts                                   ||
+||                                                                            ||
+||                 Threads : 8                                                ||
+||                   Level : meta-feature level                               ||
+||      Multimapping reads : not counted                                      ||
+||     Multiple alignments : primary alignment only                           ||
+|| Multi-overlapping reads : not counted                                      ||
+||   Min overlapping bases : 1                                                ||
+||          Read extension : 0 on 5' and 150 on 3' ends                       ||
+||                                                                            ||
+\\============================================================================//
+
+//================================= Running ==================================\\
+||                                                                            ||
+|| Load annotation file annotation.gtf ...                                    ||
+||    Features : 46917                                                        ||
+||    Meta-features : 46917                                                   ||
+||    Chromosomes/contigs : 7                                                 ||
+||                                                                            ||
+|| Process BAM file SRR23261287_pass_Aligned.sortedByCoord.out.bam...         ||
+||    Strand specific : reversely stranded                                    ||
+||    Single-end reads are included.                                          ||
+||    Total alignments : 70146456                                             ||
+||    Successfully assigned alignments : 67877057 (96.8%)                     ||
+||    Running time : 0.19 minutes                                             ||
+||                                                                            ||
+|| Process BAM file SRR23261291_pass_Aligned.sortedByCoord.out.bam...         ||
+||    Strand specific : reversely stranded                                    ||
+||    Single-end reads are included.                                          ||
+||    Total alignments : 58693321                                             ||
+||    Successfully assigned alignments : 56497800 (96.3%)                     ||
+||    Running time : 0.15 minutes                                             ||
+||                                                                            ||
+|| Process BAM file SRR23261288_pass_Aligned.sortedByCoord.out.bam...         ||
+||    Strand specific : reversely stranded                                    ||
+||    Single-end reads are included.                                          ||
+||    Total alignments : 67567042                                             ||
+||    Successfully assigned alignments : 64815857 (95.9%)                     ||
+||    Running time : 0.17 minutes                                             ||
+||                                                                            ||
+|| Process BAM file SRR23261284_pass_Aligned.sortedByCoord.out.bam...         ||
+||    Strand specific : reversely stranded                                    ||
+||    Single-end reads are included.                                          ||
+||    Total alignments : 39103408                                             ||
+||    Successfully assigned alignments : 37540994 (96.0%)                     ||
+||    Running time : 0.10 minutes                                             ||
+||                                                                            ||
+|| Process BAM file SRR23261292_pass_Aligned.sortedByCoord.out.bam...         ||
+||    Strand specific : reversely stranded                                    ||
+||    Single-end reads are included.                                          ||
+||    Total alignments : 13356279                                             ||
+||    Successfully assigned alignments : 11745855 (87.9%)                     ||
+||    Running time : 0.04 minutes                                             ||
+||                                                                            ||
+|| Process BAM file SRR23261283_pass_Aligned.sortedByCoord.out.bam...         ||
+||    Strand specific : reversely stranded                                    ||
+||    Single-end reads are included.                                          ||
+||    Total alignments : 44828679                                             ||
+||    Successfully assigned alignments : 43243061 (96.5%)                     ||
+||    Running time : 0.16 minutes                                             ||
+||                                                                            ||
+|| Write the final count table.                                               ||
+|| Write the read assignment summary.                                         ||
+||                                                                            ||
+|| Summary of counting results can be found in file "results/counts/counts.t  ||
+|| sv.summary"                                                                ||
+||                                                                            ||
+\\============================================================================//
+
+AG.sh: line 70: syntax error near unexpected token `done'
+AG.sh: line 70: `done'
+(rnaseq) [duttasam@i67 alfa]$ grep "Uniquely mapped reads %" results/aligned/*Log.final.out
+results/aligned/SRR23261283_pass_Log.final.out:                        Uniquely mapped reads % |91.21%
+results/aligned/SRR23261284_pass_Log.final.out:                        Uniquely mapped reads % |90.68%
+results/aligned/SRR23261287_pass_Log.final.out:                        Uniquely mapped reads % |92.64%
+results/aligned/SRR23261288_pass_Log.final.out:                        Uniquely mapped reads % |89.95%
+results/aligned/SRR23261291_pass_Log.final.out:                        Uniquely mapped reads % |89.69%
+results/aligned/SRR23261292_pass_Log.final.out:                        Uniquely mapped reads % |25.23%
+(rnaseq) [duttasam@i67 alfa]$ head FCfiles/SRR23261292_pass.fastq
+@SRR23261292.1.1 1 length=85
+CACAANAAGAGTGTTTTAAAACGGCTCTGTAAAAACAAAAGTTCAACCCTGTTAGTTGAATACACACATCACAAACAAGTTTCTG
++SRR23261292.1.1 1 length=85
+AAAAA#EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE
+@SRR23261292.2.1 2 length=85
+GGAATNTTCAACTCCGTGACTTAAATGCAAGCATCACAAAGGTGTTTCTGAGAATGCTTCTGTGTAGAGTTTATATGAAGATATT
++SRR23261292.2.1 2 length=85
+AAAAA#EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEAEEEAEEAEAEEEEEAAEEE
+@SRR23261292.3.1 3 length=85
+CTTTGNCGACTTGAGGGCGAGCTGGTCGAGGGTGATGATTTCTCCTCCGGCAGCAAGGATTCTGGCGCGGGCTCCTTCGGTGACG
+(rnaseq) [duttasam@i67 alfa]$ grep -c "^@" FCfiles/SRR23261292_pass.fastq
+52944122
+(rnaseq) [duttasam@i67 alfa]$ grep -c "^@" FCfiles/SRR23261283_pass.fastq
+49148250
+(rnaseq) [duttasam@i67 alfa]$ grep -o "N" FCfiles/SRR23261292_pass.fastq | wc -l
+1183073
+(rnaseq) [duttasam@i67 alfa]$ grep -o "N" FCfiles/SRR23261283_pass.fastq | wc -l
+69566
