@@ -1,0 +1,452 @@
+R version 4.4.1 (2024-06-14) -- "Race for Your Life"
+Copyright (C) 2024 The R Foundation for Statistical Computing
+Platform: x86_64-pc-linux-gnu
+
+R is free software and comes with ABSOLUTELY NO WARRANTY.
+You are welcome to redistribute it under certain conditions.
+Type 'license()' or 'licence()' for distribution details.
+
+  Natural language support but running in an English locale
+
+R is a collaborative project with many contributors.
+Type 'contributors()' for more information and
+'citation()' on how to cite R or R packages in publications.
+
+Type 'demo()' for some demos, 'help()' for on-line help, or
+'help.start()' for an HTML browser interface to help.
+Type 'q()' to quit R.
+
+> library(tidyverse)
+── Attaching core tidyverse packages ─────
+✔ dplyr     1.1.4     ✔ readr     2.1.5
+✔ forcats   1.0.0     ✔ stringr   1.5.1
+✔ ggplot2   4.0.1     ✔ tibble    3.2.1
+✔ lubridate 1.9.4     ✔ tidyr     1.3.1
+✔ purrr     1.0.2     
+── Conflicts ──── tidyverse_conflicts() ──
+✖ dplyr::filter() masks stats::filter()
+✖ dplyr::lag()    masks stats::lag()
+ℹ Use the conflicted package to force all conflicts to become errors
+> library(DESeq2)
+Loading required package: S4Vectors
+Loading required package: stats4
+Loading required package: BiocGenerics
+
+Attaching package: ‘BiocGenerics’
+
+The following objects are masked from ‘package:lubridate’:
+
+    intersect, setdiff, union
+
+The following objects are masked from ‘package:dplyr’:
+
+    combine, intersect, setdiff,
+    union
+
+The following objects are masked from ‘package:stats’:
+
+    IQR, mad, sd, var, xtabs
+
+The following objects are masked from ‘package:base’:
+
+    anyDuplicated, aperm, append,
+    as.data.frame, basename, cbind,
+    colnames, dirname, do.call,
+    duplicated, eval, evalq, Filter,
+    Find, get, grep, grepl,
+    intersect, is.unsorted, lapply,
+    Map, mapply, match, mget, order,
+    paste, pmax, pmax.int, pmin,
+    pmin.int, Position, rank, rbind,
+    Reduce, rownames, sapply,
+    setdiff, table, tapply, union,
+    unique, unsplit, which.max,
+    which.min
+
+
+Attaching package: ‘S4Vectors’
+
+The following objects are masked from ‘package:lubridate’:
+
+    second, second<-
+
+The following objects are masked from ‘package:dplyr’:
+
+    first, rename
+
+The following object is masked from ‘package:tidyr’:
+
+    expand
+
+The following object is masked from ‘package:utils’:
+
+    findMatches
+
+The following objects are masked from ‘package:base’:
+
+    expand.grid, I, unname
+
+Loading required package: IRanges
+
+Attaching package: ‘IRanges’
+
+The following object is masked from ‘package:lubridate’:
+
+    %within%
+
+The following objects are masked from ‘package:dplyr’:
+
+    collapse, desc, slice
+
+The following object is masked from ‘package:purrr’:
+
+    reduce
+
+Loading required package: GenomicRanges
+Loading required package: GenomeInfoDb
+Loading required package: SummarizedExperiment
+Loading required package: MatrixGenerics
+Loading required package: matrixStats
+
+Attaching package: ‘matrixStats’
+
+The following object is masked from ‘package:dplyr’:
+
+    count
+
+
+Attaching package: ‘MatrixGenerics’
+
+The following objects are masked from ‘package:matrixStats’:
+
+    colAlls, colAnyNAs, colAnys,
+    colAvgsPerRowSet, colCollapse,
+    colCounts, colCummaxs,
+    colCummins, colCumprods,
+    colCumsums, colDiffs,
+    colIQRDiffs, colIQRs,
+    colLogSumExps, colMadDiffs,
+    colMads, colMaxs, colMeans2,
+    colMedians, colMins,
+    colOrderStats, colProds,
+    colQuantiles, colRanges,
+    colRanks, colSdDiffs, colSds,
+    colSums2, colTabulates,
+    colVarDiffs, colVars,
+    colWeightedMads,
+    colWeightedMeans,
+    colWeightedMedians,
+    colWeightedSds, colWeightedVars,
+    rowAlls, rowAnyNAs, rowAnys,
+    rowAvgsPerColSet, rowCollapse,
+    rowCounts, rowCummaxs,
+    rowCummins, rowCumprods,
+    rowCumsums, rowDiffs,
+    rowIQRDiffs, rowIQRs,
+    rowLogSumExps, rowMadDiffs,
+    rowMads, rowMaxs, rowMeans2,
+    rowMedians, rowMins,
+    rowOrderStats, rowProds,
+    rowQuantiles, rowRanges,
+    rowRanks, rowSdDiffs, rowSds,
+    rowSums2, rowTabulates,
+    rowVarDiffs, rowVars,
+    rowWeightedMads,
+    rowWeightedMeans,
+    rowWeightedMedians,
+    rowWeightedSds, rowWeightedVars
+
+Loading required package: Biobase
+Welcome to Bioconductor
+
+    Vignettes contain introductory
+    material; view with
+    'browseVignettes()'. To cite
+    Bioconductor, see
+    'citation("Biobase")', and for
+    packages 'citation("pkgname")'.
+
+
+Attaching package: ‘Biobase’
+
+The following object is masked from ‘package:MatrixGenerics’:
+
+    rowMedians
+
+The following objects are masked from ‘package:matrixStats’:
+
+    anyMissing, rowMedians
+
+> setwd("/N/slate/duttasam/P1ADR1/alfa")
+> list.files()
+ [1] "AG.sh"                                   
+ [2] "c_elegans.PRJNA13758.WS275.genomic.fa.gz"
+ [3] "FC"                                      
+ [4] "FCfiles"                                 
+ [5] "genome"                                  
+ [6] "genomefiles"                             
+ [7] "results"                                 
+ [8] "sam1.sh"                                 
+ [9] "sam2.sh"                                 
+[10] "SRR23261283"                             
+[11] "SRR23261284"                             
+[12] "SRR23261287"                             
+[13] "SRR23261288"                             
+[14] "SRR23261291"                             
+[15] "SRR23261292"                             
+[16] "_STARtmp"                                
+[17] "WG.sh"                                   
+> countdata <- read.table("results/counts/counts.tsv",
++                         header=TRUE,
++                         row.names=1,
++                         sep="\t")
+> View(countdata)
+> countdata <- countdata[,6:ncol(countdata)]
+> colnames(countdata)
+[1] "..results.aligned.SRR23261287_pass_Aligned.sortedByCoord.out.bam"
+[2] "..results.aligned.SRR23261291_pass_Aligned.sortedByCoord.out.bam"
+[3] "..results.aligned.SRR23261288_pass_Aligned.sortedByCoord.out.bam"
+[4] "..results.aligned.SRR23261284_pass_Aligned.sortedByCoord.out.bam"
+[5] "..results.aligned.SRR23261292_pass_Aligned.sortedByCoord.out.bam"
+[6] "..results.aligned.SRR23261283_pass_Aligned.sortedByCoord.out.bam"
+> countdata <- countdata[, c("SRR23261283_pass",
++                            "SRR23261284_pass",
++                            "SRR23261287_pass",
++                            "SRR23261288_pass")]
+Error in `[.data.frame`(countdata, , c("SRR23261283_pass", "SRR23261284_pass",  : 
+  undefined columns selected
+> colnames(countdata)
+[1] "..results.aligned.SRR23261287_pass_Aligned.sortedByCoord.out.bam"
+[2] "..results.aligned.SRR23261291_pass_Aligned.sortedByCoord.out.bam"
+[3] "..results.aligned.SRR23261288_pass_Aligned.sortedByCoord.out.bam"
+[4] "..results.aligned.SRR23261284_pass_Aligned.sortedByCoord.out.bam"
+[5] "..results.aligned.SRR23261292_pass_Aligned.sortedByCoord.out.bam"
+[6] "..results.aligned.SRR23261283_pass_Aligned.sortedByCoord.out.bam"
+> countdata <- countdata[, c("SRR23261283_pass",
++                            "SRR23261284_pass",
++                            "SRR23261287_pass",
++                            "SRR23261288_pass",
++             ,)]
+Error in c("SRR23261283_pass", "SRR23261284_pass", "SRR23261287_pass",  : 
+  argument 5 is empty
+> countdata <- countdata[, c("SRR23261283_pass",
++                            "SRR23261284_pass",
++                            "SRR23261287_pass",
++                            "SRR23261288_pass")]
+Error in `[.data.frame`(countdata, , c("SRR23261283_pass", "SRR23261284_pass",  : 
+  undefined columns selected
+> countdata <- countdata[, c("SRR23261283_pass",
++                            "SRR23261284_pass",
++                            "SRR23261287_pass",
++                            "SRR23261288_pass")]
+Error in `[.data.frame`(countdata, , c("SRR23261283_pass", "SRR23261284_pass",  : 
+  undefined columns selected
+> > countdata <- countdata[, c("esults.aligned.SRR23261287_pass_Aligned.sortedByCoord.out.bam",
+Error: unexpected '>' in ">"
+> countdata <- countdata[, c("esults.aligned.SRR23261287_pass_Aligned.sortedByCoord.out.bam",
++                            +                            "esults.aligned.SRR23261288_pass_Aligned.sortedByCoord.out.bam",
++                            +                            "results.aligned.SRR23261284_pass_Aligned.sortedByCoord.out.bam",
++                            +                            "results.aligned.SRR23261283_pass_Aligned.sortedByCoord.out.bam",
++                            +             )]
+Error: unexpected ')' in:
+"                           +                            "results.aligned.SRR23261283_pass_Aligned.sortedByCoord.out.bam",
+                           +             )"
+> countdata <- countdata[, c("results.aligned.SRR23261287_pass_Aligned.sortedByCoord.out.bam",                        "results.aligned.SRR23261288_pass_Aligned.sortedByCoord.out.bam",
++                            "rresults.aligned.SRR23261284_pass_Aligned.sortedByCoord.out.bam",                           "results.aligned.SRR23261283_pass_Aligned.sortedByCoord.out.bam"         )]
+Error in `[.data.frame`(countdata, , c("results.aligned.SRR23261287_pass_Aligned.sortedByCoord.out.bam",  : 
+  undefined columns selected
+> countdata <- countdata[c("results.aligned.SRR23261287_pass_Aligned.sortedByCoord.out.bam",                        "results.aligned.SRR23261288_pass_Aligned.sortedByCoord.out.bam",
++                          "results.aligned.SRR23261284_pass_Aligned.sortedByCoord.out.bam",                           "results.aligned.SRR23261283_pass_Aligned.sortedByCoord.out.bam"         )]
+Error in `[.data.frame`(countdata, c("results.aligned.SRR23261287_pass_Aligned.sortedByCoord.out.bam",  : 
+  undefined columns selected
+> colnames(countdata) <- gsub("\\.\\./results/aligned/", "", colnames(countdata))
+> colnames(countdata) <- gsub("_Aligned.sortedByCoord.out.bam", "", colnames(countdata))
+> colnames(countdata)
+[1] "..results.aligned.SRR23261287_pass" "..results.aligned.SRR23261291_pass"
+[3] "..results.aligned.SRR23261288_pass" "..results.aligned.SRR23261284_pass"
+[5] "..results.aligned.SRR23261292_pass" "..results.aligned.SRR23261283_pass"
+> # Remove the path prefix
+> colnames(countdata) <- gsub("^\\.\\.results\\.aligned\\.", "", colnames(countdata))
+> 
+> # Remove any trailing suffixes (if you still have "_Aligned.sortedByCoord.out.bam")
+> colnames(countdata) <- gsub("_Aligned.sortedByCoord.out.bam$", "", colnames(countdata))
+> 
+> # Check
+> colnames(countdata)
+[1] "SRR23261287_pass" "SRR23261291_pass" "SRR23261288_pass" "SRR23261284_pass"
+[5] "SRR23261292_pass" "SRR23261283_pass"
+> countdata <- countdata[, !colnames(countdata) %in% c("SRR23261291_pass", "SRR23261292_pass")]
+> 
+> # Check again
+> colnames(countdata)
+[1] "SRR23261287_pass" "SRR23261288_pass" "SRR23261284_pass" "SRR23261283_pass"
+> condition <- factor(c("adr1rep2","N2rep2","N2rep3","adr1rep3"))  # adjust as per your experiment
+> coldata <- data.frame(row.names=colnames(countdata), condition)
+> countdata <- countdata[, c("SRR23261287_pass",
++                                 "SRR23261283_pass",
++                                 "SRR23261288_pass",
++                                 "SRR23261284_pass")]
+> > colnames(countdata)
+Error: unexpected '>' in ">"
+> colnames(countdata)
+[1] "SRR23261287_pass" "SRR23261283_pass" "SRR23261288_pass" "SRR23261284_pass"
+> condition <- factor(c("adr1rep2","adr1rep3","N2rep2","N2rep3"))  # adjust as per your experiment
+> > coldata <- data.frame(row.names=colnames(countdata), condition)
+Error: unexpected '>' in ">"
+> condition <- factor(c("adr1rep2","adr1rep3","N2rep2","N2rep3"))  # adjust as per your experiment
+> > coldata <- data.frame(row.names=colnames(countdata), condition)
+Error: unexpected '>' in ">"
+> condition <- factor(c("adr1rep2","adr1rep3","N2rep2","N2rep3"))  # adjust as per your experiment
+> coldata <- data.frame(row.names=colnames(countdata), condition)
+> condition <- factor(c(rep("b",2), rep("a",2)))
+> coldata <- data.frame(row.names = colnames(countdata), condition)
+> dds <- DESeqDataSetFromMatrix(countData = countdata, colData = coldata, design = ~condition)
+> keep = rowSums(counts(dds)) >= 1
+> dds <- dds[keep, ]
+> dds <- DESeq(dds)
+estimating size factors
+estimating dispersions
+gene-wise dispersion estimates
+mean-dispersion relationship
+final dispersion estimates
+fitting model and testing
+> res <- results(dds)
+> resdata <- merge(as.data.frame(res),
++                  as.data.frame(counts(dds, normalized = TRUE)),
++                  by = "row.names", sort = FALSE)
+> names(resdata)[1] <- "Gene"
+> write.csv(resdata, file="results/N2_vs_adr1_deseq.csv")
+> res <- read.csv("results/N2_vs_adr1_deseq.csv", row.names = 1)
+> 
+> summary(res$padj)  # how many genes are significantly differentially expressed
+   Min. 1st Qu.  Median    Mean 3rd Qu. 
+  0.000   1.000   1.000   0.948   1.000 
+   Max.    NA's 
+  1.000    6103 
+> table(res$padj < 0.05)  # count significant genes
+
+FALSE  TRUE 
+17849   262 
+> sig_genes <- res[res$padj < 0.05, ]
+> dim(sig_genes)  # should return 262 rows
+[1] 6365   11
+> sig_genes <- res[res$padj < 0.05, ]
+> dim(sig_genes)  # should return 262 rows
+[1] 6365   11
+> # Sort by log2 fold change (largest upregulated)
+> head(sig_genes[order(-sig_genes$log2FoldChange), ])
+                Gene   baseMean
+18436 WBGene00008797   74.04255
+15222 WBGene00020618   69.42341
+14610 WBGene00017960   37.71146
+8614  WBGene00022616   97.14051
+9716  WBGene00000749 3778.10860
+4657  WBGene00008712  701.13259
+      log2FoldChange     lfcSE     stat
+18436       2.754170 0.5757275 4.783808
+15222       2.582154 0.6120505 4.218858
+14610       2.496634 0.6734395 3.707288
+8614        2.435324 0.5488290 4.437309
+9716        2.348994 0.4524374 5.191866
+4657        2.328796 0.5936065 3.923130
+            pvalue         padj
+18436 1.720046e-06 0.0005191959
+15222 2.455425e-05 0.0044029911
+14610 2.094904e-04 0.0198642989
+8614  9.109052e-06 0.0019183027
+9716  2.081968e-07 0.0000876896
+4657  8.740580e-05 0.0107687510
+      SRR23261287_pass SRR23261283_pass
+18436         154.2050        103.80160
+15222         101.3755        135.83914
+14610          59.2547         69.20107
+8614          136.3572        190.94369
+9716         4817.4787       7814.59489
+4657          666.0800       1672.35919
+      SRR23261288_pass SRR23261284_pass
+18436         20.18721        17.976383
+15222         14.20581        26.273176
+14610         12.71046         9.679591
+8614          23.92558        37.335566
+9716        1014.59415      1465.766650
+4657         175.70348       290.387733
+> 
+> # Sort by log2 fold change (largest downregulated)
+> head(sig_genes[order(sig_genes$log2FoldChange), ])
+                Gene   baseMean
+20954 WBGene00019689  13.015988
+9435  WBGene00017573   9.876554
+15508 WBGene00021621  16.540908
+15503 WBGene00021619 133.896871
+15504 WBGene00021620  47.767179
+20953 WBGene00019684  22.185471
+      log2FoldChange    lfcSE      stat
+20954      -7.195742 1.883092 -3.821237
+9435       -6.797455 1.934577 -3.513664
+15508      -6.145536 1.608044 -3.821746
+15503      -5.879818 1.081526 -5.436594
+15504      -5.807721 1.133470 -5.123841
+20953      -5.508540 1.475235 -3.734007
+            pvalue         padj
+20954 1.327840e-04 1.463466e-02
+9435  4.419716e-04 3.541835e-02
+15508 1.325100e-04 1.463466e-02
+15503 5.430874e-08 2.810245e-05
+15504 2.993742e-07 1.178688e-04
+20953 1.884572e-04 1.875356e-02
+      SRR23261287_pass SRR23261283_pass
+20954        0.0000000         0.000000
+9435         0.0000000         0.000000
+15508        0.7139121         0.000000
+15503        7.1391208         1.281501
+15504        2.8556483         0.000000
+20953        0.7139121         1.281501
+      SRR23261288_pass SRR23261284_pass
+20954         11.96279         40.10116
+9435          10.46744         29.03877
+15508         33.64535         31.80437
+15503        463.55812         63.60874
+15504        139.81511         48.39796
+20953         13.45814         73.28833
+> library(ggplot2)
+> 
+> ggplot(res, aes(x=log2FoldChange, y=-log10(padj), color=padj < 0.05)) +
++     geom_point(alpha=0.5) +
++     labs(x="log2 Fold Change", y="-log10 adjusted p-value") +
++     theme_minimal() +
++     scale_color_manual(values=c("grey","red"))
+Warning messages:
+1: Removed 6103 rows containing missing values
+or values outside the scale range
+(`geom_point()`). 
+2: In grid.Call.graphics(C_points, x$x, x$y, x$pch, x$size) :
+  semi-transparency is not supported on this device: reported only once per page
+> library(pheatmap)
+Warning messages:
+1: In grid.Call.graphics(C_points, x$x, x$y, x$pch, x$size) :
+  semi-transparency is not supported on this device: reported only once per page
+2: In grid.Call.graphics(C_points, x$x, x$y, x$pch, x$size) :
+  semi-transparency is not supported on this device: reported only once per page
+> 
+> # Take top 50 most significant genes
+> top_genes <- head(rownames(sig_genes[order(sig_genes$padj), ]), 50)
+> 
+> # Extract normalized counts
+> mat <- as.matrix(counts(dds, normalized=TRUE)[top_genes, ])
+Error in (function (cond)  : 
+  error in evaluating the argument 'x' in selecting a method for function 'as.matrix': subscript out of bounds
+> sig_genes <- res[which(res$padj < 0.05), ]
+Warning messages:
+1: In grid.Call.graphics(C_points, x$x, x$y, x$pch, x$size) :
+  semi-transparency is not supported on this device: reported only once per page
+2: In grid.Call.graphics(C_points, x$x, x$y, x$pch, x$size) :
+  semi-transparency is not supported on this device: reported only once per page
+3: In grid.Call.graphics(C_points, x$x, x$y, x$pch, x$size) :
+  semi-transparency is not supported on this device: reported only once per page
+4: In grid.Call.graphics(C_points, x$x, x$y, x$pch, x$size) :
+  semi-transparency is not supported on this device: reported only once per page
+5: In grid.Call.graphics(C_points, x$x, x$y, x$pch, x$size) :
+  semi-transparency is not supported on this device: reported only once per page
+6: In grid.Call.graphics(C_points, x$x, x$y, x$pch, x$size) :
+  semi-transparency is not supported on this device: reported only once per page
+> 
