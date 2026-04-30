@@ -1,0 +1,673 @@
+#!/bin/bash
+#SBATCH -A c01988
+#SBATCH --time=12:00:00
+#SBATCH --cpus-per-task=8
+#SBATCH --mem=32G
+
+conda activate rnaseq_env
+
+echo "starting with prefetching SRA"
+conda install -c bioconda sra-tools
+
+ref="/N/scratch/duttasam/ADR1_P"
+# create directories
+mkdir -p "$ref"/FCfiles_adult
+mkdir -p "$ref"/FCfiles_YoungAd
+mkdir -p "$ref"/FCfiles_L4
+mkdir -p "$ref"/FCfiles_embryo
+
+echo "prefetch sra for adult neural cells data"
+for sra in SRR11937785 SRR11937786 SRR11937787 SRR11937788 SRR11937792 SRR11937793 SRR11937794 SRR11937795
+ do
+       echo "Starting processing for $sra"
+        echo "----------------------------"
+        prefetch "$sra"
+         echo "prefetch successfully done for $sra"
+        echo "Starting fastq processing"
+        fasterq-dump "$sra" --outdir "$ref"/FCfiles_adult --skip-technical --readids --read-filter pass --dumpbase --split-3 --clip "$sra"
+        echo "fastqc done successfully for $sra"
+done
+
+echo "prefetch sra for Young adult data"
+for sra in SRR23261292 SRR23261288 SRR23261284 SRR23261291 SRR23261287 SRR23261283
+ do
+       echo "Starting processing for $sra"
+        echo "----------------------------"
+        prefetch "$sra"
+         echo "prefetch successfully done for $sra"
+        echo "Starting fastq processing"
+        fasterq-dump "$sra" --outdir "$ref"/FCfiles_YoungAd --skip-technical --readids --read-filter pass --dumpbase --split-3 --clip "$sra"
+        echo "fastqc done successfully for $sra"
+done
+
+echo "prefetch sra for L4 data"
+for sra in SRR6739752 SRR6739753 SRR6739754 SRR6739734 SRR6739735 SRR6739736
+ do
+       echo "Starting processing for $sra"
+        echo "----------------------------"
+        prefetch "$sra"
+         echo "prefetch successfully done for $sra"
+        echo "Starting fastq processing"
+        fastq-dump --outdir "$ref"/FCfiles_L4 --skip-technical --readids --read-filter pass --dumpbase --split-3 --clip "$sra"
+        echo "fastqc done successfully for $sra"
+done
+
+echo "prefetch sra for embryo data"
+for sra in SRR6739748 SRR6739749 SRR6739750 SRR6739731 SRR6739732 SRR6739733
+ do
+       echo "Starting processing for $sra"
+        echo "----------------------------"
+        prefetch "$sra"
+         echo "prefetch successfully done for $sra"
+        echo "Starting fastq processing"
+        fastq-dump --outdir "$ref"/FCfiles_embryo --skip-technical --readids --read-filter pass --dumpbase --split-3 --clip "$sra"
+        echo "fastqc done successfully for $sra"
+done
+
+# RNA-seq alignment and counting pipeline
+
+# Unload system perl for compatibility with entrez-directmodule unload perl
+echo "indexing genome"
+# Variables
+#these are the links for downloading genome but I have uploaded the reference genome in the files
+#ASSEMBLY='https://downloads.wormbase.org/releases/WS275/species/c_elegans/PRJNA13758/c_elegans.PRJNA13758.WS275.genomic.fa.gz'
+#ANNOTATION='https://downloads.wormbase.org/releases/WS275/species/c_elegans/PRJNA13758/c_elegans.PRJNA13758.WS275.genomic.fa.gz'
+
+# Make genome directory
+mkdir -p "$ref"/genomefiles
+
+# Download and unpack genome assembly
+#wget $ASSEMBLY
+gunzip -c "$ref"/genome/assembly.fa.gz > "$ref"/genomefiles/assembly.fasta
+
+# Download and unpack genome annotation
+#wget $ANNOTATION
+gunzip -c "$ref"/genome/annotation.gtf.gz > "$ref"/genomefiles/annotation.gtf
+
+# Create STAR index directory
+mkdir -p "$ref"/genomefiles/index
+
+# Generate STAR genome index
+STAR \
+  --runThreadN 8 \
+  --runMode genomeGenerate \
+  --genomeDir "$ref"/genomefiles/index \
+  --genomeFastaFiles "$ref"/genomefiles/assembly.fasta \
+  --sjdbGTFfile "$ref"/genomefiles/annotation.gtf \
+  --genomeSAindexNbases 12
+
+# Make output directories
+mkdir -p "$ref"/results_all/aligned
+mkdir -p "$ref"/results_all/counts
+
+
+# Path to FASTQ files
+###########################
+## Align Reads to Genome ##
+###########################
+
+# Create an output directory for aligned and count reads.
+
+mkdir -p "$ref"/results_all/aligned/embryo
+mkdir -p "$ref"/results_all/aligned/L4
+mkdir -p "$ref"/results_all/aligned/YoungAd
+mkdir -p "$ref"/results_all/aligned/adult
+mkdir -p "$ref"/results_all/counts/embryo
+mkdir -p "$ref"/results_all/counts/L4
+mkdir -p "$ref"/results_all/counts/YoungAd
+mkdir -p "$ref"/results_all/counts/adult
+
+
+# Align the reads.
+#Align the reads for embryo data
+# Path to FASTQ files
+FASTQ_DIR="/N/scratch/duttasam/ADR1_P/FCfiles_embryo"
+
+
+ # Align the reads (single-end)
+for FASTQ in $FASTQ_DIR/*_pass.fastq; do
+  PREFIX="$ref"/results_all/aligned/embryo/$(basename $FASTQ)
+  STAR \
+    --runThreadN 8 \
+    --outFilterMultimapNmax 1 \
+    --outFilterScoreMinOverLread .66 \
+    --outFilterMismatchNmax 10 \
+    --outFilterMismatchNoverLmax .3 \
+    --runMode alignReads \
+    --genomeDir "$ref"/genomefiles/index \
+    --readFilesIn $FASTQ \
+    --outFileNamePrefix $PREFIX \
+    --outSAMattributes All \
+    --outSAMtype BAM SortedByCoordinate
+done
+
+# Indexing the BAM files.
+
+BAMS=($(find "$ref"//results_all/aligned/embryo -name "*\.bam"))
+
+for BAM in ${BAMS[@]}; do
+  samtools index $BAM
+  done
+
+  ####################
+## Count Features ##
+####################
+
+# Create an output directory for read counts.
+# Count reads.
+BAMS=$(find "$ref"//results_all/aligned/embryo -name "*\.bam")
+
+featureCounts \
+  -a "$ref"/genomefiles/annotation.gtf \
+  -o "$ref"/results_all/counts/counts_embryo.tsv \
+  -t gene \
+  -g gene_id \
+  --largestOverlap \
+  --readExtension3 150 \
+  --primary \
+  -s 2 \
+  -T 8 \
+  ${BAMS}
+
+# end of embryo data
+
+# Align the reads.
+#Align the reads for L4 data
+# Path to FASTQ files
+FASTQ_DIR="/N/scratch/duttasam/ADR1_P/FCfiles_L4"
+
+
+ # Align the reads (single-end)
+for FASTQ in $FASTQ_DIR/*_pass.fastq; do
+  PREFIX="$ref"/results_all/aligned/L4/$(basename $FASTQ)
+  STAR \
+    --runThreadN 8 \
+    --outFilterMultimapNmax 1 \
+    --outFilterScoreMinOverLread .66 \
+    --outFilterMismatchNmax 10 \
+    --outFilterMismatchNoverLmax .3 \
+    --runMode alignReads \
+    --genomeDir "$ref"/genomefiles/index \
+    --readFilesIn $FASTQ \
+    --outFileNamePrefix $PREFIX \
+    --outSAMattributes All \
+    --outSAMtype BAM SortedByCoordinate
+done
+
+# Indexing the BAM files.
+
+BAMS=($(find "$ref"/results/aligned/L4 -name "*\.bam"))
+  for BAM in ${BAMS[@]}; do
+  samtools index $BAM
+  done
+
+  ####################
+## Count Features ##
+####################
+
+# Create an output directory for read counts.
+# Count reads.
+BAMS=$(find "$ref"//results_all/aligned/L4 -name "*\.bam")
+
+featureCounts \
+  -a "$ref"/genomefiles/annotation.gtf \
+  -o "$ref"/results_all/counts/counts_L4.tsv \
+  -t gene \
+  -g gene_id \
+  --largestOverlap \
+  --readExtension3 150 \
+  --primary \
+  -s 2 \
+  -T 8 \
+  ${BAMS}
+
+# end of L4 data
+
+
+# Align the reads.
+#Align the reads for YoungAd data
+# Path to FASTQ files
+FASTQ_DIR="/N/scratch/duttasam/ADR1_P/FCfiles_YoungAd"
+
+
+ # Align the reads (single-end)
+for FASTQ in $FASTQ_DIR/*_pass.fastq; do
+  PREFIX="$ref"/results_all/aligned/YoungAd/$(basename $FASTQ)      
+  STAR \
+    --runThreadN 8 \
+    --outFilterMultimapNmax 1 \
+    --outFilterScoreMinOverLread .66 \
+    --outFilterMismatchNmax 10 \
+    --outFilterMismatchNoverLmax .3 \
+    --runMode alignReads \
+    --genomeDir "$ref"/genomefiles/index \
+    --readFilesIn $FASTQ \
+    --outFileNamePrefix $PREFIX \
+    --outSAMattributes All \
+    --outSAMtype BAM SortedByCoordinate
+done
+
+# Indexing the BAM files.
+
+BAMS=($(find "$ref"/results/aligned/YoungAd -name "*\.bam"))
+  for BAM in ${BAMS[@]}; do
+  samtools index $BAM
+  done
+
+  ####################
+## Count Features ##
+####################
+
+# Create an output directory for read counts.
+# Count reads.
+BAMS=$(find "$ref"//results_all/aligned/YoungAd -name "*\.bam")
+
+featureCounts \
+  -a "$ref"/genomefiles/annotation.gtf \
+  -o "$ref"/results_all/counts/counts_YoungAd.tsv \
+  -t gene \
+  -g gene_id \
+  --largestOverlap \
+  --readExtension3 150 \
+  --primary \
+  -s 2 \
+  -T 8 \
+  ${BAMS}
+
+# end of Young Adult data
+# Align the reads.
+#Align the reads for adult
+# Path to FASTQ files
+FASTQ_DIR="/N/scratch/duttasam/ADR1_P/FCfiles_adult"
+
+
+ # Align the reads (single-end)
+for FASTQ in $FASTQ_DIR/*_pass.fastq; do
+  PREFIX="$ref"/results_all/aligned/adult/$(basename $FASTQ)
+  STAR \
+    --runThreadN 8 \
+    --outFilterMultimapNmax 1 \
+    --outFilterScoreMinOverLread .66 \
+    --outFilterMismatchNmax 10 \
+    --outFilterMismatchNoverLmax .3 \
+    --runMode alignReads \
+    --genomeDir "$ref"/genomefiles/index \
+    --readFilesIn $FASTQ \
+    --outFileNamePrefix $PREFIX \
+    --outSAMattributes All \
+    --outSAMtype BAM SortedByCoordinate
+done
+
+# Indexing the BAM files.
+
+BAMS=($(find "$ref"/results/aligned/adult -name "*\.bam"))
+  for BAM in ${BAMS[@]}; do
+  samtools index $BAM
+  done
+
+  ####################
+## Count Features ##
+####################
+
+# Create an output directory for read counts.
+# Count reads.
+BAMS=$(find "$ref"//results_all/aligned/adult -name "*\.bam")
+
+featureCounts \
+  -a "$ref"/genomefiles/annotation.gtf \
+  -o "$ref"/results_all/counts/counts_adult.tsv \
+  -t gene \
+  -g gene_id \
+  --largestOverlap \
+  --readExtension3 150 \
+  --primary \
+  -s 2 \
+  -T 8 \
+  ${BAMS}
+
+# end of  Adult data
+
+
+#loading tidyverse
+library(tidyverse)
+
+#loading deseq2
+library(DESeq2)
+
+print("starting with YoungAd data")
+
+#setting up directory for working
+setwd("/N/scratch/duttasam/ADR1_P/results_all")
+
+#setting countdata table
+YoungAd <- read.table("counts_YoungAd.tsv",header=TRUE,row.names=1,sep="\t")
+View(YoungAd)
+
+YoungAd <- YoungAd[,6:ncol(YoungAd)]
+colnames(YoungAd)
+colnames(YoungAd) <- gsub("^\\.\\.results\\.aligned\\.", "", colnames(YoungAd))
+
+# Remove any trailing suffixes (if you still have "_Aligned.sortedByCoord.out.bam")
+ colnames(YoungAd) <- gsub("_Aligned.sortedByCoord.out.bam$", "", colnames(YoungAd))
+
+ # Check
+ colnames(YoungAd)
+YoungAd <- YoungAd[, !colnames(YoungAd) %in% c("SRR23261291_pass", "SRR23261292_pass")]
+
+ # Check again
+ colnames(YoungAd)
+
+YoungAd <- YoungAd[, c("SRR23261288_pass","SRR23261284_pass","SRR23261287_pass","SRR23261283_pass")]
+colnames(YoungAd)
+condition <- factor(c("N2rep2","N2rep3","adr1rep2","adr1rep3"))  # adjust as per your experiment
+ YAcoldata <- data.frame(row.names=colnames(YoungAd),condition)
+condition <- factor(c(rep("a",2), rep("b",2)))
+YAcoldata <- data.frame(row.names = colnames(YoungAd), condition)
+ dds <- DESeqDataSetFromMatrix(countData = YoungAd, colData = YAcoldata, design = ~condition)
+ keep = rowSums(counts(dds)) >= 1
+ dds <- dds[keep, ]
+dds <- DESeq(dds)
+res_YA <- results(dds)
+resdata_YA <- merge(as.data.frame(res_YA),as.data.frame(counts(dds, normalized = TRUE)),by = "row.names", sort = FALSE)
+names(resdata_YA)[1] <- "Gene"
+write.csv(resdata_YA, file="YA_N2_vs_adr1_deseq.csv")
+
+
+print("starting with L4 data")
+
+#setting up directory for working
+setwd("/N/scratch/duttasam/ADR1_P/results_all")
+
+#setting countdata table
+L4 <- read.table("counts_L4.tsv",header=TRUE,row.names=1,sep="\t")
+View(L4)
+
+L4 <- L4[,6:ncol(L4)]
+colnames(L4)
+colnames(L4) <- gsub("^\\.\\.results\\.aligned\\.", "", colnames(L4))
+
+# Remove any trailing suffixes (if you still have "_Aligned.sortedByCoord.out.bam")
+ colnames(L4) <- gsub("_Aligned.sortedByCoord.out.bam$", "", colnames(L4))
+colnames(L4) <- gsub("^.*SRR", "SRR", colnames(L4))
+colnames(L4) <- gsub("_pass.*", "_pass", colnames(L4))
+ # Check
+ colnames(L4)
+
+L4 <- L4[, c("SRR6739752_pass","SRR6739753_pass","SRR6739754_pass","SRR6739734_pass","SRR6739735_pass","SRR6739736_pass")]
+colnames(L4)
+condition <- factor(c("N2rep1","N2rep2","N2rep3","adr1rep1","adr1rep2","adr1rep3"))  # adjust as per your experiment
+ L4coldata <- data.frame(row.names=colnames(L4),condition)
+condition <- factor(c(rep("a",3), rep("b",3)))
+L4coldata <- data.frame(row.names = colnames(L4), condition)
+ dds <- DESeqDataSetFromMatrix(countData = L4, colData = L4coldata, design = ~condition)
+ keep = rowSums(counts(dds)) >= 1
+dds <- dds[keep, ]
+dds <- DESeq(dds)
+res_L4 <- results(dds)
+resdata_L4 <- merge(as.data.frame(res_L4),as.data.frame(counts(dds, normalized = TRUE)),by = "row.names", sort = FALSE)
+names(resdata_L4)[1] <- "Gene"
+write.csv(resdata_L4, file="L4_N2_vs_adr1_deseq.csv")
+
+print("starting with embryo data")
+
+#setting up directory for working
+setwd("/N/scratch/duttasam/ADR1_P/results_all")
+
+#setting countdata table
+embryo <- read.table("counts_embryo.tsv",header=TRUE,row.names=1,sep="\t")
+View(embryo)
+
+embryo <- embryo[,6:ncol(embryo)]
+colnames(embryo)
+colnames(embryo) <- gsub("^\\.\\.results\\.aligned\\.", "", colnames(embryo))
+
+# Remove any trailing suffixes (if you still have "_Aligned.sortedByCoord.out.bam")
+ colnames(embryo) <- gsub("_Aligned.sortedByCoord.out.bam$", "", colnames(embryo))
+colnames(embryo) <- gsub("^.*SRR", "SRR", colnames(embryo))
+colnames(embryo) <- gsub("_pass.*", "_pass", colnames(embryo))
+ # Check
+ colnames(embryo)
+
+embryo <- embryo[, c("SRR6739748_pass","SRR6739749_pass","SRR6739750_pass","SRR6739731_pass","SRR6739732_pass","SRR6739733_pass")]
+colnames(embryo)
+condition <- factor(c("N2rep1","N2rep2","N2rep3","adr1rep1","adr1rep2","adr1rep3"))  # adjust as per your experiment
+ Ecoldata <- data.frame(row.names=colnames(embryo),condition)
+condition <- factor(c(rep("a",3),rep("b",3)))
+Ecoldata <- data.frame(row.names = colnames(embryo), condition)
+ dds <- DESeqDataSetFromMatrix(countData = embryo, colData = Ecoldata, design = ~condition)
+ keep = rowSums(counts(dds)) >= 1
+dds <- dds[keep, ]
+dds <- DESeq(dds)
+res_embryo <- results(dds)
+resdata_embryo <- merge(as.data.frame(res_embryo),as.data.frame(counts(dds, normalized = TRUE)),by = "row.names", sort = FALSE)
+names(resdata_embryo)[1] <- "Gene"
+write.csv(resdata_embryo, file="embryo_N2_vs_adr1_deseq.csv")
+
+print("starting with adult data")
+
+#setting up directory for working
+setwd("/N/scratch/duttasam/ADR1_P/results_all")
+
+#setting countdata table
+adult <- read.table("counts_adult.tsv",header=TRUE,row.names=1,sep="\t")
+View(adult)
+
+adult <- adult[,6:ncol(adult)]
+colnames(adult)
+colnames(adult) <- gsub("^\\.\\.results\\.aligned\\.", "", colnames(adult))
+
+# Remove any trailing suffixes (if you still have "_Aligned.sortedByCoord.out.bam")
+ colnames(adult) <- gsub("_Aligned.sortedByCoord.out.bam$", "", colnames(adult))
+colnames(adult) <- gsub("^.*SRR", "SRR", colnames(adult))
+colnames(adult) <- gsub("_pass.*", "_pass", colnames(adult))
+ # Check
+ colnames(adult)
+
+adult <- adult[, c("SRR11937785_pass","SRR11937786_pass","SRR11937787_pass","SRR11937788_pass","SRR11937792_pass","SRR11937793_pass","SRR11>
+colnames(adult)
+condition <- factor(c("N2rep1","N2rep2","N2rep3","N2rep4","adr1rep1","adr1rep2","adr1rep3","adr1rep4"))  # adjust as per your experiment
+ ADcoldata <- data.frame(row.names=colnames(adult),condition)
+condition <- factor(c(rep("a",4),rep("b",4)))
+ADcoldata <- data.frame(row.names = colnames(adult), condition)
+ dds <- DESeqDataSetFromMatrix(countData = adult, colData = ADcoldata, design = ~condition)
+ keep = rowSums(counts(dds)) >= 1
+dds <- dds[keep, ]
+dds <- DESeq(dds)
+res_adult <- results(dds)
+resdata_adult <- merge(as.data.frame(res_adult),as.data.frame(counts(dds, normalized = TRUE)),by = "row.names", sort = FALSE)
+names(resdata_adult)[1] <- "Gene"
+write.csv(resdata_adult, file="adult_N2_vs_adr1_deseq.csv")
+
+
+#to make the heatmap and volcano plots
+setwd("/N/scratch/duttasam/ADR1_P/results_all")
+
+
+library(dplyr)
+
+adult = read.csv("adult_N2_vs_adr1_deseq.csv")
+L4= read.csv("L4_N2_vs_adr1_deseq.csv")
+YA= read.csv("YA_N2_vs_adr1_deseq.csv")
+embryo= read.csv("embryo_N2_vs_adr1_deseq.csv")
+
+adult = adult %>% select(Gene, log2FoldChange, pvalue) %>% mutate(stage = "adult")
+L4 = L4 %>% select(Gene, log2FoldChange, pvalue) %>% mutate(stage = "L4")
+embryo = embryo %>% select(Gene, log2FoldChange, pvalue) %>% mutate(stage = "embryo")
+YA = YA %>% select(Gene, log2FoldChange, pvalue) %>% mutate(stage = "YoungAd")
+
+cstage = rbind(adult, L4, embryo, YA)
+genes_keep <- cstage %>%
+  filter(abs(log2FoldChange) > 0.5,
+         pvalue < 0.05) %>%
+  pull(Gene) %>%
+  unique()
+cstage_final <- cstage %>%
+  filter(Gene %in% genes_keep)
+library(tidyr)
+
+mat <- cstage_final %>%
+  select(Gene, stage, log2FoldChange) %>%
+  pivot_wider(names_from = stage, values_from = log2FoldChange)
+mat <- as.data.frame(mat)
+rownames(mat) <- mat$Gene
+mat$Gene <- NULL
+mat[is.na(mat)] <- 0
+mat_scaled <- t(scale(t(as.matrix(mat))))
+
+library(pheatmap)
+pheatmap(mat_scaled, show_rownames = FALSE,  filename = "heatmap.pdf",
+         width = 8,
+         height = 10)
+
+library(ggplot2)
+
+#adult %>% mutate(sign = if_else(pvalue < 0.05, "sign", "ns")) %>%
+ # ggplot() + geom_point(aes(x = log2FoldChange, y = -log10(pvalue), color = sign))
+
+#adult %>% mutate(sign = if_else(pvalue < 0.05, "sign", "ns")) %>%
+ # mutate(direction = if_else(log2FoldChange > 0.5, "up", (if_else(log2FoldChange < -0.5, "down", "nc"))) %>% head
+library(dplyr)
+library(ggplot2)
+
+adult_plot <- adult %>%
+  mutate(direction = case_when(
+    log2FoldChange > 0.5 & pvalue < 0.05 ~ "up",
+    log2FoldChange < -0.5 & pvalue < 0.05 ~ "down",
+    TRUE ~ "ns"
+  ))
+ggplot(adult_plot, aes(x = log2FoldChange, y = -log10(pvalue))) +
+  geom_point(aes(color = direction)) +
+ # Color scheme
+  scale_color_manual(values = c(
+    "up" = "red",
+    "down" = "blue",
+    "ns" = "grey"
+  )) +
+
+  # Threshold lines
+  geom_vline(xintercept = c(-0.5, 0.5), linetype = "dashed") +
+  geom_hline(yintercept = -log10(0.05), linetype = "dashed") +
+
+  theme_minimal() +
+  labs(title = "Adult Volcano Plot",
+       x = "log2 Fold Change",
+       y = "-log10(p-value)")
+
+L4_plot <- L4 %>%
+  mutate(direction = case_when(
+    log2FoldChange > 0.5 & pvalue < 0.05 ~ "up",
+    log2FoldChange < -0.5 & pvalue < 0.05 ~ "down",
+    TRUE ~ "ns"
+  ))
+embryo_plot <- embryo %>%
+  mutate(direction = case_when(
+    log2FoldChange > 0.5 & pvalue < 0.05 ~ "up",
+    log2FoldChange < -0.5 & pvalue < 0.05 ~ "down",
+    TRUE ~ "ns"
+  ))
+YA_plot <- YA %>%
+  mutate(direction = case_when(
+    log2FoldChange > 0.5 & pvalue < 0.05 ~ "up",
+    log2FoldChange < -0.5 & pvalue < 0.05 ~ "down",
+    TRUE ~ "ns"
+  ))
+df_all <- bind_rows(
+  adult_plot,
+  L4_plot,
+  embryo_plot,
+  YA_plot
+)
+plot = ggplot(df_all, aes(x = log2FoldChange, y = -log10(pvalue))) +
+  geom_point(aes(color = direction)) +
+
+  scale_color_manual(values = c(
+    "up" = "red",
+    "down" = "blue",
+    "ns" = "grey"
+  )) +
+
+  geom_vline(xintercept = c(-0.5, 0.5), linetype = "dashed") +
+  geom_hline(yintercept = -log10(0.05), linetype = "dashed") +
+
+  facet_wrap(~stage) +
+
+  theme_minimal() +
+  labs(title = "Volcano Plots Across Stages",
+       x = "log2 Fold Change",
+       y = "-log10(p-value)")
+ggsave("volcano_stages.pdf", plot = plot, width = 10, height = 7)
+
+#end of heatmap and volcano plots
+
+#aging analysis
+aging = read.csv("Aging Data list of genes.csv")
+aging_list = aging %>% pull(WBGeneID)
+
+aging_mod = aging %>% rename("Gene" = "WBGeneID") %>% select(Gene, Type.of.tissue, Category)
+
+df_all %>% filter(direction != "ns") %>% select(Gene, stage, direction) %>% head
+library(tidyr)
+library(dplyr)
+
+mat_dir <- df_all %>%
+  filter(direction != "ns") %>%
+  select(Gene, stage, direction) %>%
+  pivot_wider(
+    names_from = stage,
+    values_from = direction
+  ) %>% inner_join(., aging_mod, by = "Gene")
+
+mat_dir_f <- df_all %>%
+  filter(direction != "ns") %>%
+  select(Gene, stage, direction) %>%
+  pivot_wider(
+    names_from = stage,
+    values_from = direction
+  ) %>% filter(Gene %in% aging_list)
+
+mat_dir %>% head
+library(tidyr)
+library(dplyr)
+
+mat_dir_long <- mat_dir %>%
+  pivot_longer(
+    cols = c(adult, L4, embryo, YoungAd),
+    names_to = "stage",
+    values_to = "direction"
+  )
+mat_dir_long_f <- mat_dir_long %>%
+  filter(!is.na(direction))
+counts <- mat_dir_long_f %>%
+  group_by(stage, Type.of.tissue, direction) %>%
+  summarise(n = n(), .groups = "drop")
+library(ggplot2)
+
+ggplot(counts, aes(x = Type.of.tissue, y = n, fill = direction)) +
+  geom_bar(stat = "identity", position = "dodge") +
+
+  facet_wrap(~stage) +
+
+  scale_fill_manual(values = c(
+    "up" = "red",
+    "down" = "blue"
+  )) +
+
+  theme_minimal() +
+  labs(x = "Tissue Type",
+       y = "Number of Genes",
+       fill = "Direction",
+       title = "Gene Regulation Across Tissues and Stages") +
+
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
+#counts %>% ggplot() + geom_point(aes(x = Type.of.tissue, y  = stage, size = n, color = direction))
+
+
+
+p <-counts %>%
+  ggplot(aes(x = Type.of.tissue, y = stage, size = n, color = direction)) +
+  
+  geom_point(
+    position = position_dodge(width = 1.0)
+  )
+ggsave("aging_dotplot.pdf", plot = p, width = 10, height = 6)
