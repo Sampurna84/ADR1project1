@@ -1,0 +1,119 @@
+#to make the heatmap and volcano plots
+setwd("/N/scratch/duttasam/ADR1_P/results_all")
+
+
+library(dplyr)
+
+adult = read.csv("adult_N2_vs_adr1_deseq.csv")
+L4= read.csv("L4_N2_vs_adr1_deseq.csv")
+YA= read.csv("YA_N2_vs_adr1_deseq.csv")
+embryo= read.csv("embryo_N2_vs_adr1_deseq.csv")
+
+adult = adult %>% select(Gene, log2FoldChange, pvalue) %>% mutate(stage = "adult")
+L4 = L4 %>% select(Gene, log2FoldChange, pvalue) %>% mutate(stage = "L4")
+embryo = embryo %>% select(Gene, log2FoldChange, pvalue) %>% mutate(stage = "embryo")
+YA = YA %>% select(Gene, log2FoldChange, pvalue) %>% mutate(stage = "YoungAd")
+
+cstage = rbind(adult, L4, embryo, YA)
+genes_keep <- cstage %>%
+  filter(abs(log2FoldChange) > 0.5,
+         pvalue < 0.05) %>%
+  pull(Gene) %>%
+  unique()
+cstage_final <- cstage %>%
+  filter(Gene %in% genes_keep)
+library(tidyr)
+
+mat <- cstage_final %>%
+  select(Gene, stage, log2FoldChange) %>%
+  pivot_wider(names_from = stage, values_from = log2FoldChange)
+mat <- as.data.frame(mat)
+rownames(mat) <- mat$Gene
+mat$Gene <- NULL
+mat[is.na(mat)] <- 0
+mat_scaled <- t(scale(t(as.matrix(mat))))
+
+library(pheatmap)
+pheatmap(mat_scaled, show_rownames = FALSE,  filename = "heatmap.pdf",
+         width = 8,
+         height = 10)
+
+library(ggplot2)
+
+#adult %>% mutate(sign = if_else(pvalue < 0.05, "sign", "ns")) %>%
+ # ggplot() + geom_point(aes(x = log2FoldChange, y = -log10(pvalue), color = sign))
+
+#adult %>% mutate(sign = if_else(pvalue < 0.05, "sign", "ns")) %>%
+ # mutate(direction = if_else(log2FoldChange > 0.5, "up", (if_else(log2FoldChange < -0.5, "down", "nc"))) %>% head
+library(dplyr)
+library(ggplot2)
+
+adult_plot <- adult %>%
+  mutate(direction = case_when(
+    log2FoldChange > 0.5 & pvalue < 0.05 ~ "up",
+    log2FoldChange < -0.5 & pvalue < 0.05 ~ "down",
+    TRUE ~ "ns"
+  ))
+ggplot(adult_plot, aes(x = log2FoldChange, y = -log10(pvalue))) +
+  geom_point(aes(color = direction)) +
+ # Color scheme
+  scale_color_manual(values = c(
+    "up" = "red",
+    "down" = "blue",
+    "ns" = "grey"
+  )) +
+
+  # Threshold lines
+  geom_vline(xintercept = c(-0.5, 0.5), linetype = "dashed") +
+  geom_hline(yintercept = -log10(0.05), linetype = "dashed") +
+
+  theme_minimal() +
+  labs(title = "Adult Volcano Plot",
+       x = "log2 Fold Change",
+       y = "-log10(p-value)")
+
+L4_plot <- L4 %>%
+  mutate(direction = case_when(
+    log2FoldChange > 0.5 & pvalue < 0.05 ~ "up",
+    log2FoldChange < -0.5 & pvalue < 0.05 ~ "down",
+    TRUE ~ "ns"
+  ))
+embryo_plot <- embryo %>%
+  mutate(direction = case_when(
+    log2FoldChange > 0.5 & pvalue < 0.05 ~ "up",
+    log2FoldChange < -0.5 & pvalue < 0.05 ~ "down",
+    TRUE ~ "ns"
+  ))
+YA_plot <- YA %>%
+  mutate(direction = case_when(
+    log2FoldChange > 0.5 & pvalue < 0.05 ~ "up",
+    log2FoldChange < -0.5 & pvalue < 0.05 ~ "down",
+    TRUE ~ "ns"
+  ))
+df_all <- bind_rows(
+  adult_plot,
+  L4_plot,
+  embryo_plot,
+  YA_plot
+)
+plot = ggplot(df_all, aes(x = log2FoldChange, y = -log10(pvalue))) +
+  geom_point(aes(color = direction)) +
+
+  scale_color_manual(values = c(
+    "up" = "red",
+    "down" = "blue",
+    "ns" = "grey"
+  )) +
+
+  geom_vline(xintercept = c(-0.5, 0.5), linetype = "dashed") +
+  geom_hline(yintercept = -log10(0.05), linetype = "dashed") +
+
+  facet_wrap(~stage) +
+
+  theme_minimal() +
+  labs(title = "Volcano Plots Across Stages",
+       x = "log2 Fold Change",
+       y = "-log10(p-value)")
+ggsave("volcano_stages.pdf", plot = plot, width = 10, height = 7)
+
+#end of heatmap and volcano plots
