@@ -1,0 +1,65 @@
+#!/bin/bash
+#SBATCH -A c01988
+#SBATCH --time=12:00:00
+#SBATCH --cpus-per-task=8
+#SBATCH --mem=32G
+
+conda activate rnaseq_env
+
+echo "starting with prefetching SRA"
+conda install -c bioconda sra-tools
+
+ref="/N/scratch/duttasam/ADR1_P"
+# create directories
+mkdir -p "$ref"/FCfiles_adult
+mkdir -p "$ref"/FCfiles_YoungAd
+mkdir -p "$ref"/FCfiles_L4
+mkdir -p "$ref"/FCfiles_embryo
+
+echo "prefetch sra for adult neural cells data"
+for sra in SRR11937785 SRR11937786 SRR11937787 SRR11937788 SRR11937792 SRR11937793 SRR11937794 SRR11937795
+ do
+       echo "Starting processing for $sra"
+        echo "----------------------------"
+        prefetch "$sra"
+         echo "prefetch successfully done for $sra"
+        echo "Starting fastq processing"
+        fasterq-dump "$sra" --outdir "$ref"/FCfiles_adult --skip-technical --readids --read-filter pass --dumpbase --split-3 --clip "$sra"
+        echo "fastqc done successfully for $sra"
+done
+
+echo "prefetch sra for Young adult data"
+for sra in SRR23261292 SRR23261288 SRR23261284 SRR23261291 SRR23261287 SRR23261283
+ do
+       echo "Starting processing for $sra"
+        echo "----------------------------"
+        prefetch "$sra"
+         echo "prefetch successfully done for $sra"
+        echo "Starting fastq processing"
+        fasterq-dump "$sra" --outdir "$ref"/FCfiles_YoungAd --skip-technical --readids --read-filter pass --dumpbase --split-3 --clip "$sra"
+        echo "fastqc done successfully for $sra"
+done
+
+echo "prefetch sra for L4 data"
+for sra in SRR6739752 SRR6739753 SRR6739754 SRR6739734 SRR6739735 SRR6739736
+ do
+       echo "Starting processing for $sra"
+        echo "----------------------------"
+        prefetch "$sra"
+         echo "prefetch successfully done for $sra"
+        echo "Starting fastq processing"
+        fastq-dump --outdir "$ref"/FCfiles_L4 --skip-technical --readids --read-filter pass --dumpbase --split-3 --clip "$sra"
+        echo "fastqc done successfully for $sra"
+done
+
+echo "prefetch sra for embryo data"
+for sra in SRR6739748 SRR6739749 SRR6739750 SRR6739731 SRR6739732 SRR6739733
+ do
+       echo "Starting processing for $sra"
+        echo "----------------------------"
+        prefetch "$sra"
+         echo "prefetch successfully done for $sra"
+        echo "Starting fastq processing"
+        fastq-dump --outdir "$ref"/FCfiles_embryo --skip-technical --readids --read-filter pass --dumpbase --split-3 --clip "$sra"
+        echo "fastqc done successfully for $sra"
+done
