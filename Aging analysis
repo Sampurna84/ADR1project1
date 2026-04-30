@@ -1,0 +1,72 @@
+#aging analysis
+aging = read.csv("Aging Data list of genes.csv")
+aging_list = aging %>% pull(WBGeneID)
+
+aging_mod = aging %>% rename("Gene" = "WBGeneID") %>% select(Gene, Type.of.tissue, Category)
+
+df_all %>% filter(direction != "ns") %>% select(Gene, stage, direction) %>% head
+library(tidyr)
+library(dplyr)
+
+mat_dir <- df_all %>%
+  filter(direction != "ns") %>%
+  select(Gene, stage, direction) %>%
+  pivot_wider(
+    names_from = stage,
+    values_from = direction
+  ) %>% inner_join(., aging_mod, by = "Gene")
+
+mat_dir_f <- df_all %>%
+  filter(direction != "ns") %>%
+  select(Gene, stage, direction) %>%
+  pivot_wider(
+    names_from = stage,
+    values_from = direction
+  ) %>% filter(Gene %in% aging_list)
+
+mat_dir %>% head
+library(tidyr)
+library(dplyr)
+
+mat_dir_long <- mat_dir %>%
+  pivot_longer(
+    cols = c(adult, L4, embryo, YoungAd),
+    names_to = "stage",
+    values_to = "direction"
+  )
+mat_dir_long_f <- mat_dir_long %>%
+  filter(!is.na(direction))
+counts <- mat_dir_long_f %>%
+  group_by(stage, Type.of.tissue, direction) %>%
+  summarise(n = n(), .groups = "drop")
+library(ggplot2)
+
+ggplot(counts, aes(x = Type.of.tissue, y = n, fill = direction)) +
+  geom_bar(stat = "identity", position = "dodge") +
+
+  facet_wrap(~stage) +
+
+  scale_fill_manual(values = c(
+    "up" = "red",
+    "down" = "blue"
+  )) +
+
+  theme_minimal() +
+  labs(x = "Tissue Type",
+       y = "Number of Genes",
+       fill = "Direction",
+       title = "Gene Regulation Across Tissues and Stages") +
+
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
+#counts %>% ggplot() + geom_point(aes(x = Type.of.tissue, y  = stage, size = n, color = direction))
+
+
+
+p <-counts %>%
+  ggplot(aes(x = Type.of.tissue, y = stage, size = n, color = direction)) +
+  
+  geom_point(
+    position = position_dodge(width = 1.0)
+  )
+ggsave("aging_dotplot.pdf", plot = p, width = 10, height = 6)
