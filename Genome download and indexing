@@ -1,39 +1,36 @@
-#!/bin/bash
 # RNA-seq alignment and counting pipeline
 
 # Unload system perl for compatibility with entrez-directmodule unload perl
-
+echo "indexing genome"
 # Variables
-# had to manually download them and scp them to make them work and their names changed to assembly and annnotation
-#ASSEMBLY='https://downloads.wormbase.org/releases/WS275/species/c_elegans/PRJNA13758/c_elegans$
-#ANNOTATION='https://downloads.wormbase.org/releases/WS275/species/c_elegans/PRJNA13758/c_elega$
+#these are the links for downloading genome but I have uploaded the reference genome in the files
+#ASSEMBLY='https://downloads.wormbase.org/releases/WS275/species/c_elegans/PRJNA13758/c_elegans.PRJNA13758.WS275.genomic.fa.gz'
+#ANNOTATION='https://downloads.wormbase.org/releases/WS275/species/c_elegans/PRJNA13758/c_elegans.PRJNA13758.WS275.genomic.fa.gz'
 
 # Make genome directory
-mkdir -p genomefiles
+mkdir -p "$ref"/genomefiles
 
 # Download and unpack genome assembly
 #wget $ASSEMBLY
-gunzip -c genome/assembly.fa.gz > genomefiles/assembly.fasta
+gunzip -c "$ref"/genome/assembly.fa.gz > "$ref"/genomefiles/assembly.fasta
 
 # Download and unpack genome annotation
-wget $ANNOTATION
-gunzip -c genome/annotation.gtf.gz > genomefiles/annotation.gtf
+#wget $ANNOTATION
+gunzip -c "$ref"/genome/annotation.gtf.gz > "$ref"/genomefiles/annotation.gtf
 
 # Create STAR index directory
-mkdir -p genomefiles/index
+mkdir -p "$ref"/genomefiles/index
 
 # Generate STAR genome index
 STAR \
   --runThreadN 8 \
   --runMode genomeGenerate \
-  --genomeDir genomefiles/index \
-  --genomeFastaFiles genomefiles/assembly.fasta \
-  --sjdbGTFfile genomefiles/annotation.gtf \
+  --genomeDir "$ref"/genomefiles/index \
+  --genomeFastaFiles "$ref"/genomefiles/assembly.fasta \
+  --sjdbGTFfile "$ref"/genomefiles/annotation.gtf \
   --genomeSAindexNbases 12
 
 # Make output directories
-mkdir -p results/aligned
-mkdir -p results/counts
-
-
+mkdir -p "$ref"/results_all/aligned
+mkdir -p "$ref"/results_all/counts
 
